@@ -1,0 +1,23 @@
+# DevBoost AI Backend Dependencies
+# Production-ready Python packages
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# HTTP Client (for GitHub API integration)
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Optional: Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# Optional: Code Quality
+black==23.11.0
+ruff==0.1.6

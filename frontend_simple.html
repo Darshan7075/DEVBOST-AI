@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevBoost AI - Repository Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .level-info {
+            margin-top: 8px;
+            padding: 10px;
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border: 2px solid #fcc;
+            padding: 20px;
+            border-radius: 6px;
+            color: #c0392b;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #ecf0f1;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .result-section {
+            margin-bottom: 20px;
+        }
+
+        .result-section h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .output-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .meta-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .meta-list li {
+            padding: 10px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .meta-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 DevBoost AI</h1>
+            <p>AI-Powered Repository Analysis with Enhanced Prompts</p>
+        </div>
+
+        <div class="card">
+            <form id="analyzeForm">
+                <div class="form-group">
+                    <label for="repo">Repository URL</label>
+                    <input 
+                        type="text" 
+                        id="repo" 
+                        placeholder="https://github.com/username/repository"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="task">Analysis Task</label>
+                    <select id="task">
+                        <option value="explain">Explain Project - Get project overview</option>
+                        <option value="bugs">Find Bugs - Identify bugs and security issues</option>
+                        <option value="docs">Generate Docs - Create documentation</option>
+                        <option value="tests">Generate Tests - Create test cases</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="level">Enhancement Level</label>
+                    <select id="level" onchange="updateLevelInfo()">
+                        <option value="basic">Basic - Quick, straightforward analysis</option>
+                        <option value="advanced">Advanced - Structured with priorities and examples</option>
+                        <option value="detailed">Detailed - Comprehensive with context and links</option>
+                    </select>
+                    <div id="levelInfo" class="level-info"></div>
+                </div>
+
+                <button type="submit">Analyze Repository</button>
+            </form>
+        </div>
+
+        <div id="loading" class="card" style="display: none;">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px;">Analyzing repository...</p>
+            </div>
+        </div>
+
+        <div id="error" class="card" style="display: none;">
+            <div class="error">
+                <h3>Error</h3>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+
+        <div id="results" class="card" style="display: none;">
+            <div class="results-header">
+                <h2>Analysis Results</h2>
+                <div id="badges"></div>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api/v1';
+
+        const levelDescriptions = {
+            basic: '✓ Quick analysis with straightforward output',
+            advanced: '✓ Structured output with priorities, examples, and best practices',
+            detailed: '✓ Comprehensive analysis with explanations and documentation links'
+        };
+
+        function updateLevelInfo() {
+            const level = document.getElementById('level').value;
+            const levelInfo = document.getElementById('levelInfo');
+            levelInfo.textContent = levelDescriptions[level];
+        }
+
+        document.getElementById('analyzeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const repo = document.getElementById('repo').value;
+            const task = document.getElementById('task').value;
+            const level = document.getElementById('level').value;
+
+            // Hide previous results/errors
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ repo, task, level })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Analysis failed');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const badgesDiv = document.getElementById('badges');
+            const contentDiv = document.getElementById('resultsContent');
+
+            // Create badges
+            badgesDiv.innerHTML = `
+                <span class="badge">Status: ${data.status}</span>
+                <span class="badge">Task: ${data.task}</span>
+                <span class="badge">Level: ${data.enhancement_level}</span>
+            `;
+
+            // Create content
+            contentDiv.innerHTML = `
+                <div class="result-section">
+                    <h3>Repository</h3>
+                    <p>${data.repo}</p>
+                </div>
+
+                <div class="result-section">
+                    <h3>Metadata</h3>
+                    <ul class="meta-list">
+                        <li>Prompt Length: ${data.metadata.prompt_length} characters</li>
+                        <li>Timestamp: ${data.metadata.timestamp}</li>
+                    </ul>
+                </div>
+
+                <div class="result-section">
+                    <h3>Prompt Used</h3>
+                    <div class="code-block">${escapeHtml(data.prompt_used)}</div>
+                </div>
+
+                <div class="result-section">
+                    <h3>Analysis Output</h3>
+                    <div class="output-content">${escapeHtml(data.output)}</div>
+                </div>
+            `;
+
+            resultsDiv.style.display = 'block';
+        }
+
+        function displayError(message) {
+            const errorDiv = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize level info
+        updateLevelInfo();
+    </script>
+</body>
+</html>
